@@ -175,7 +175,14 @@ class Link(Generic[T]):
                         "All the links must have the same model class"
                     )
             ids.append(link.ref.id)
-        return await model_class.find(In("_id", ids)).to_list()  # type: ignore
+        found = await model_class.find(In("_id", ids)).to_list()
+        
+        object_map = {item.id: item for item in found}
+        resolved_links = [object_map[id] for id in ids if id in object_map]
+        
+        return resolved_links  # type: ignore
+
+    return await model_class.find(In("_id", ids)).to_list()  # type: ignore
 
     @classmethod
     async def fetch_many(cls, links: List["Link"]):
